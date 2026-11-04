@@ -3,9 +3,9 @@ package dev.thebjoredcraft.railway.database
 import dev.thebjoredcraft.railway.database.type.DatabaseType
 import org.jetbrains.exposed.v1.core.vendors.MariaDBDialect
 import org.jetbrains.exposed.v1.core.vendors.PostgreSQLDialect
-import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabaseConfig
+import org.jetbrains.exposed.v1.r2dbc.transactions.TransactionManager
 
 object DatabaseConnection {
     private var database: R2dbcDatabase? = null
