@@ -3,11 +3,12 @@ package dev.thebjoredcraft.railway.database
 import dev.thebjoredcraft.railway.database.type.DatabaseType
 import org.jetbrains.exposed.v1.core.vendors.MariaDBDialect
 import org.jetbrains.exposed.v1.core.vendors.PostgreSQLDialect
+import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabaseConfig
 
 object DatabaseConnection {
-    lateinit var database: R2dbcDatabase
+    private var database: R2dbcDatabase? = null
 
     fun create(
         type: DatabaseType,
@@ -34,5 +35,12 @@ object DatabaseConnection {
                 }
             }
         )
+    }
+
+    fun disconnect() {
+        val db = database ?: return
+
+        TransactionManager.closeAndUnregister(db)
+        database = null
     }
 }
