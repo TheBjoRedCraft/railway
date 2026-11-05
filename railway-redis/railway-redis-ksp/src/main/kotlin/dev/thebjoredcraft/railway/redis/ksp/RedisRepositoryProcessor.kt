@@ -1,7 +1,10 @@
 package dev.thebjoredcraft.railway.redis.ksp
 
 import com.google.devtools.ksp.processing.*
-import com.google.devtools.ksp.symbol.*
+import com.google.devtools.ksp.symbol.KSAnnotated
+import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.validate
 import java.io.OutputStreamWriter
 
@@ -39,8 +42,8 @@ class RedisRepositoryProcessor(
 
         OutputStreamWriter(file, Charsets.UTF_8).use { writer ->
             writer.write("package $packageName\n\n")
-            writer.write("import com.redis.framework.runtime.*\n")
-            writer.write("import com.redis.framework.api.*\n")
+            writer.write("import dev.thebjoredcraft.railway.redis.runtime.*\n")
+            writer.write("import dev.thebjoredcraft.railway.redis.api.*\n")
             writer.write("import org.redisson.api.RedissonReactiveClient\n")
             writer.write("import java.util.UUID\n\n")
 
@@ -52,7 +55,6 @@ class RedisRepositoryProcessor(
                 val funcName = func.simpleName.asString()
                 val parameters = func.parameters
 
-                // Annotation ermitteln
                 val annotation = func.annotations.firstOrNull {
                     it.shortName.asString().startsWith("Redis")
                 } ?: continue
@@ -60,18 +62,16 @@ class RedisRepositoryProcessor(
                 val annotationName = annotation.shortName.asString()
                 val keyTemplateArg = annotation.arguments.first().value.toString()
 
-                // Key Template auflösen (Ersetzen von {param} durch String-Interpolation)
-                var resolvedKeyExpr = if (repoPrefix.isNotEmpty()) "\"$repoPrefix:\"" else "\"\""
-                // Hier vereinfachtes Parsing für Template-Ersetzung
+                var resolvedKeyExpr: String
                 var template = keyTemplateArg
                 for (param in parameters) {
                     val pName = param.name?.asString() ?: continue
                     template = template.replace("{$pName}", "\$$pName")
                 }
-                if (repoPrefix.isNotEmpty()) {
-                    resolvedKeyExpr = "\"$repoPrefix:$template\""
+                resolvedKeyExpr = if (repoPrefix.isNotEmpty()) {
+                    "\"$repoPrefix:$template\""
                 } else {
-                    resolvedKeyExpr = "\"$template\""
+                    "\"$template\""
                 }
 
                 val paramListStr = parameters.joinToString(", ") { p ->
