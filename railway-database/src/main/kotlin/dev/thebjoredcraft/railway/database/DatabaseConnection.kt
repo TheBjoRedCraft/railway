@@ -44,7 +44,7 @@ object DatabaseConnection {
 
     fun create(path: Path) = create(
         ConfigManager.create(
-            path = path.resolve("database-config.yml"),
+            path = path.resolve("railway-database.yml"),
             format = RailwayConfigFormat.YAML,
             default = RailwayDatabaseConfig()
         ).also {
