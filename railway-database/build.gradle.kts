@@ -14,12 +14,13 @@ configurations {
     }
 }
 
-val exposedVersion = "1.6.0"
-
 dependencies {
-    runtimeDownload("org.jetbrains.exposed:exposed-core:$exposedVersion")
-    runtimeDownload("org.jetbrains.expowsed:exposed-r2dbc:$exposedVersion")
+    implementation(projects.railwayConfig)
 
-    runtimeDownload("org.postgresql:postgresql:42.7.8")
-    runtimeDownload("org.mariadb.jdbc:mariadb-java-client:3.5.6")
+    runtimeDownload("org.jetbrains.exposed:exposed-core:1.6.0")
+    runtimeDownload("org.jetbrains.exposed:exposed-r2dbc:1.6.0")
+
+    runtimeDownload("io.r2dbc:r2dbc-pool:1.0.2.RELEASE")
+    runtimeDownload("org.postgresql:r2dbc-postgresql:1.1.3.RELEASE")
+    runtimeDownload("org.mariadb:r2dbc-mariadb:1.4.2")
 }

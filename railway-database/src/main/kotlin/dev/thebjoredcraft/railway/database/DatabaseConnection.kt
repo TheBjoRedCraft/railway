@@ -1,14 +1,34 @@
 package dev.thebjoredcraft.railway.database
 
+import dev.thebjoredcraft.railway.config.RailwayConfig
+import dev.thebjoredcraft.railway.config.RailwayConfigFormat
+import dev.thebjoredcraft.railway.config.manager.ConfigManager
+import dev.thebjoredcraft.railway.database.config.RailwayDatabaseConfig
 import dev.thebjoredcraft.railway.database.type.DatabaseType
+import io.r2dbc.pool.ConnectionPool
+import io.r2dbc.pool.ConnectionPoolConfiguration
+import io.r2dbc.postgresql.PostgresqlConnectionConfiguration
+import io.r2dbc.postgresql.PostgresqlConnectionFactory
+import org.jetbrains.exposed.v1.core.SqlLogger
+import org.jetbrains.exposed.v1.core.Transaction
+import org.jetbrains.exposed.v1.core.statements.StatementContext
+import org.jetbrains.exposed.v1.core.statements.expandArgs
 import org.jetbrains.exposed.v1.core.vendors.MariaDBDialect
 import org.jetbrains.exposed.v1.core.vendors.PostgreSQLDialect
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabaseConfig
 import org.jetbrains.exposed.v1.r2dbc.transactions.TransactionManager
+import org.mariadb.r2dbc.MariadbConnectionConfiguration
+import org.mariadb.r2dbc.MariadbConnectionFactory
+import org.slf4j.LoggerFactory
+import org.slf4j.event.Level
+import java.nio.file.Path
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.toJavaDuration
 
 object DatabaseConnection {
     private var database: R2dbcDatabase? = null
+    private lateinit var configHolder: RailwayConfig<RailwayDatabaseConfig>
 
     fun create(
         type: DatabaseType,
@@ -16,25 +36,81 @@ object DatabaseConnection {
         post: Int,
         username: String,
         password: String,
-        databaseName: String
-    ) {
-        val driver = when (type) {
-            DatabaseType.POSTGRESQL -> "org.postgresql.Driver"
-            DatabaseType.MARIADB -> "org.mariadb.jdbc.Driver"
+        databaseName: String,
+    ) = create(
+        RailwayDatabaseConfig(
+            host = host,
+            port = post,
+            username = username,
+            password = password,
+            databaseName = databaseName,
+            type = type
+        )
+    )
+
+    fun create(path: Path) = create(
+        ConfigManager.create(
+            path = path.resolve("database-config.yml"),
+            format = RailwayConfigFormat.YAML,
+            default = RailwayDatabaseConfig()
+        ).also {
+            configHolder = it
+        }.load()
+    )
+
+    fun create(config: RailwayDatabaseConfig) {
+        val connectionBuilder = when (config.type) {
+            DatabaseType.POSTGRESQL -> MariadbConnectionFactory.from(
+                MariadbConnectionConfiguration.builder()
+                    .host(config.host)
+                    .port(config.port)
+                    .username(config.username)
+                    .password(config.password)
+                    .database(config.databaseName)
+                    .build()
+            )
+
+            DatabaseType.MARIADB -> PostgresqlConnectionFactory(
+                PostgresqlConnectionConfiguration.builder()
+                    .host(config.host)
+                    .port(config.port)
+                    .username(config.username)
+                    .password(config.password)
+                    .database(config.databaseName)
+                    .build()
+            )
         }
 
+        val poolFactory = ConnectionPool(
+            ConnectionPoolConfiguration.builder()
+                .connectionFactory(connectionBuilder)
+                .initialSize(config.pool.initialSize)
+                .maxSize(config.pool.maxSize)
+                .maxCreateConnectionTime(config.pool.maxCreateConnectionTimeMillis.milliseconds.toJavaDuration())
+                .maxAcquireTime(config.pool.maxAcquireTimeMillis.milliseconds.toJavaDuration())
+                .maxIdleTime(config.pool.maxIdleTimeMillis.milliseconds.toJavaDuration())
+                .maxLifeTime(config.pool.maxLifeTimeMillis.milliseconds.toJavaDuration())
+                .build()
+        )
+
         database = R2dbcDatabase.connect(
-            url = "r2dbc:${type.name.lowercase()}://$host:$post/$databaseName",
+            url = "r2dbc:${config.type.name.lowercase()}://${config.host}:${config.port}/${config.databaseName}",
             driver = driver,
-            user = username,
-            password = password,
+            user = config.username,
+            password = config.password,
             databaseConfig = R2dbcDatabaseConfig {
-                explicitDialect = when (type) {
+                explicitDialect = when (config.type) {
                     DatabaseType.POSTGRESQL -> PostgreSQLDialect()
                     DatabaseType.MARIADB -> MariaDBDialect()
                 }
+                sqlLogger = RailwaySqlLogger(config.logLevel)
             }
         )
+    }
+
+    fun reconnect(config: RailwayDatabaseConfig = configHolder.reload()) {
+        disconnect()
+        create(config)
     }
 
     fun disconnect() {
@@ -42,5 +118,17 @@ object DatabaseConnection {
 
         TransactionManager.closeAndUnregister(db)
         database = null
+    }
+
+
+    internal class RailwaySqlLogger(val level: Level) : SqlLogger {
+        private val baseLogger = LoggerFactory.getLogger("RailwayDatabase")
+
+        override fun log(
+            context: StatementContext,
+            transaction: Transaction
+        ) {
+            baseLogger.atLevel(level).log("SQL: ${context.expandArgs(transaction)}")
+        }
     }
 }
