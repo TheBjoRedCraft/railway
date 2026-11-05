@@ -54,8 +54,8 @@ object DatabaseConnection {
 
     fun create(config: RailwayDatabaseConfig) {
         val connectionBuilder = when (config.type) {
-            DatabaseType.POSTGRESQL -> MariadbConnectionFactory.from(
-                MariadbConnectionConfiguration.builder()
+            DatabaseType.POSTGRESQL -> PostgresqlConnectionFactory(
+                PostgresqlConnectionConfiguration.builder()
                     .host(config.host)
                     .port(config.port)
                     .username(config.username)
@@ -64,8 +64,8 @@ object DatabaseConnection {
                     .build()
             )
 
-            DatabaseType.MARIADB -> PostgresqlConnectionFactory(
-                PostgresqlConnectionConfiguration.builder()
+            DatabaseType.MARIADB -> MariadbConnectionFactory.from(
+                MariadbConnectionConfiguration.builder()
                     .host(config.host)
                     .port(config.port)
                     .username(config.username)

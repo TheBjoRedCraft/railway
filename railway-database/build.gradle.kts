@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm")
     id("xyz.jpenilla.gremlin-gradle") version "0.0.9"
+    `java-library`
 }
 
 repositories {
@@ -15,6 +16,9 @@ configurations {
 
 dependencies {
     implementation(projects.railwayConfig)
+
+    compileOnlyApi("org.jetbrains.exposed:exposed-core:1.6.0")
+    compileOnlyApi("org.jetbrains.exposed:exposed-r2dbc:1.6.0")
 
     runtimeDownload("org.jetbrains.exposed:exposed-core:1.6.0")
     runtimeDownload("org.jetbrains.exposed:exposed-r2dbc:1.6.0")
