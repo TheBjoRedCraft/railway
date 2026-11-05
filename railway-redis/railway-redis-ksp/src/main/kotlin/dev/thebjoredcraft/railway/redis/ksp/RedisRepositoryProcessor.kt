@@ -15,7 +15,7 @@ class RedisRepositoryProcessor(
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols =
-            resolver.getSymbolsWithAnnotation("com.redis.framework.annotations.RedisRepository")
+            resolver.getSymbolsWithAnnotation("dev.thebjoredcraft.railway.redis.annotations.RedisRepository")
         val ret = symbols.filter { !it.validate() }.toList()
 
         for (symbol in symbols.filterIsInstance<KSClassDeclaration>()) {
