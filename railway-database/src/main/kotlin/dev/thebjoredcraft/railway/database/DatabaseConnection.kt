@@ -9,10 +9,6 @@ import io.r2dbc.pool.ConnectionPool
 import io.r2dbc.pool.ConnectionPoolConfiguration
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration
 import io.r2dbc.postgresql.PostgresqlConnectionFactory
-import org.jetbrains.exposed.v1.core.SqlLogger
-import org.jetbrains.exposed.v1.core.Transaction
-import org.jetbrains.exposed.v1.core.statements.StatementContext
-import org.jetbrains.exposed.v1.core.statements.expandArgs
 import org.jetbrains.exposed.v1.core.vendors.MariaDBDialect
 import org.jetbrains.exposed.v1.core.vendors.PostgreSQLDialect
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
@@ -20,8 +16,6 @@ import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabaseConfig
 import org.jetbrains.exposed.v1.r2dbc.transactions.TransactionManager
 import org.mariadb.r2dbc.MariadbConnectionConfiguration
 import org.mariadb.r2dbc.MariadbConnectionFactory
-import org.slf4j.LoggerFactory
-import org.slf4j.event.Level
 import java.nio.file.Path
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.toJavaDuration
@@ -105,7 +99,7 @@ object DatabaseConnection {
                         DatabaseType.POSTGRESQL -> PostgreSQLDialect()
                         DatabaseType.MARIADB -> MariaDBDialect()
                     }
-                    sqlLogger = RailwaySqlLogger(config.logLevel)
+                    sqlLogger = DatabaseSqlLogger(config.logLevel)
                 }
             )
         }.onFailure {
@@ -123,17 +117,5 @@ object DatabaseConnection {
 
         TransactionManager.closeAndUnregister(db)
         database = null
-    }
-
-
-    internal class RailwaySqlLogger(val level: Level) : SqlLogger {
-        private val baseLogger = LoggerFactory.getLogger("RailwayDatabase")
-
-        override fun log(
-            context: StatementContext,
-            transaction: Transaction
-        ) {
-            baseLogger.atLevel(level).log("SQL: ${context.expandArgs(transaction)}")
-        }
     }
 }
