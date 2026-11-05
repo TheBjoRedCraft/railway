@@ -1,6 +1,5 @@
 plugins {
     kotlin("jvm")
-    `java-library`
     id("xyz.jpenilla.gremlin-gradle") version "0.0.9"
 }
 
