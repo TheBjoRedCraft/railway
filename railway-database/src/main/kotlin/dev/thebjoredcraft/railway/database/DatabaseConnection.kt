@@ -81,23 +81,24 @@ object DatabaseConnection {
             )
         }
 
-        val poolFactory = ConnectionPool(
+        val connectionPool = ConnectionPool(
             ConnectionPoolConfiguration.builder()
                 .connectionFactory(connectionBuilder)
                 .initialSize(config.pool.initialSize)
+
                 .maxSize(config.pool.maxSize)
-                .maxCreateConnectionTime(config.pool.maxCreateConnectionTimeMillis.milliseconds.toJavaDuration())
-                .maxAcquireTime(config.pool.maxAcquireTimeMillis.milliseconds.toJavaDuration())
+                .minIdle(config.pool.minIdle)
                 .maxIdleTime(config.pool.maxIdleTimeMillis.milliseconds.toJavaDuration())
                 .maxLifeTime(config.pool.maxLifeTimeMillis.milliseconds.toJavaDuration())
+
+                .maxCreateConnectionTime(config.pool.maxCreateConnectionTimeMillis.milliseconds.toJavaDuration())
+                .maxAcquireTime(config.pool.maxAcquireTimeMillis.milliseconds.toJavaDuration())
+                .maxValidationTime(config.pool.maxValidationTimeMillis.milliseconds.toJavaDuration())
                 .build()
         )
 
         database = R2dbcDatabase.connect(
-            url = "r2dbc:${config.type.name.lowercase()}://${config.host}:${config.port}/${config.databaseName}",
-            driver = driver,
-            user = config.username,
-            password = config.password,
+            connectionPool,
             databaseConfig = R2dbcDatabaseConfig {
                 explicitDialect = when (config.type) {
                     DatabaseType.POSTGRESQL -> PostgreSQLDialect()
