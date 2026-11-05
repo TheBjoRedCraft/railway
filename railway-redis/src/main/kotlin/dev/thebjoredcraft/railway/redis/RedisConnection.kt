@@ -6,12 +6,13 @@ import dev.thebjoredcraft.railway.config.manager.ConfigManager
 import dev.thebjoredcraft.railway.redis.config.RailwayRedisConfig
 import org.redisson.Redisson
 import org.redisson.api.RedissonClient
+import org.redisson.api.RedissonReactiveClient
 import org.redisson.config.Config
 import java.nio.file.Path
 
 object RedisConnection {
-    private var redisClient: RedissonClient? = null
     private lateinit var configHolder: RailwayConfig<RailwayRedisConfig>
+    var redisClient: RedissonClient? = null
 
     fun create(
         host: String,
@@ -46,6 +47,13 @@ object RedisConnection {
         }.onFailure {
             error("Failed to connect to the redis: ${it.message}")
         }
+    }
+
+    inline fun <reified T> getRepository(): T {
+        val repoName = T::class.java.name
+        val implClass = Class.forName("${repoName}Impl")
+        val constructor = implClass.getDeclaredConstructor(RedissonReactiveClient::class.java)
+        return constructor.newInstance(redisClient) as T
     }
 
     fun reconnect(config: RailwayRedisConfig = configHolder.reload()) {
