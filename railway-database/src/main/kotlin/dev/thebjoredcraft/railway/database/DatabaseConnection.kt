@@ -97,16 +97,20 @@ object DatabaseConnection {
                 .build()
         )
 
-        database = R2dbcDatabase.connect(
-            connectionPool,
-            databaseConfig = R2dbcDatabaseConfig {
-                explicitDialect = when (config.type) {
-                    DatabaseType.POSTGRESQL -> PostgreSQLDialect()
-                    DatabaseType.MARIADB -> MariaDBDialect()
+        runCatching {
+            database = R2dbcDatabase.connect(
+                connectionPool,
+                databaseConfig = R2dbcDatabaseConfig {
+                    explicitDialect = when (config.type) {
+                        DatabaseType.POSTGRESQL -> PostgreSQLDialect()
+                        DatabaseType.MARIADB -> MariaDBDialect()
+                    }
+                    sqlLogger = RailwaySqlLogger(config.logLevel)
                 }
-                sqlLogger = RailwaySqlLogger(config.logLevel)
-            }
-        )
+            )
+        }.onFailure {
+            error("Failed to connect to the database: ${it.message}")
+        }
     }
 
     fun reconnect(config: RailwayDatabaseConfig = configHolder.reload()) {
