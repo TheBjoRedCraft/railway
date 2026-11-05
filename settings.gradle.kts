@@ -8,3 +8,4 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include("railway-database")
 include("railway-config")
+include("railway-redis")
