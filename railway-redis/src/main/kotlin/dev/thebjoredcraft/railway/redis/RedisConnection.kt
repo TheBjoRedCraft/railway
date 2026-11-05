@@ -28,7 +28,7 @@ object RedisConnection {
 
     fun create(path: Path) = create(
         ConfigManager.create(
-            path = path.resolve("redis-config.yml"),
+            path = path.resolve("railway-redis.yml"),
             format = RailwayConfigFormat.YAML,
             default = RailwayRedisConfig()
         ).also {
