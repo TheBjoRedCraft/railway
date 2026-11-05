@@ -16,6 +16,7 @@ configurations {
 
 dependencies {
     api("org.spongepowered:configurate-core:4.2.0")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     runtimeDownload("org.spongepowered:configurate-core:4.2.0")
     runtimeDownload("org.spongepowered:configurate-gson:4.2.0")
     runtimeDownload("org.spongepowered:configurate-yaml:4.2.0")
