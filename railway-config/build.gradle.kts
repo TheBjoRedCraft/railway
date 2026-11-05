@@ -21,4 +21,5 @@ dependencies {
     runtimeDownload("org.spongepowered:configurate-yaml:4.2.0")
     runtimeDownload("org.spongepowered:configurate-jackson:4.2.0")
     runtimeDownload("org.spongepowered:configurate-extra-kotlin:4.2.0")
+    runtimeDownload("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 }
