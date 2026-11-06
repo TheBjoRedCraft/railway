@@ -15,8 +15,8 @@ dependencies {
     api("org.jetbrains.exposed:exposed-r2dbc:1.6.0")
 
     implementation("io.r2dbc:r2dbc-pool:1.0.2.RELEASE")
-    runtimeOnly("org.postgresql:r2dbc-postgresql:1.1.3.RELEASE")
-    runtimeOnly("org.mariadb:r2dbc-mariadb:1.4.2")
+    implementation("org.postgresql:r2dbc-postgresql:1.1.3.RELEASE")
+    implementation("org.mariadb:r2dbc-mariadb:1.4.2")
 }
 
 publishing {

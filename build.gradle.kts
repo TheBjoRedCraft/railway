@@ -6,7 +6,7 @@ plugins {
 
 allprojects {
     group = "dev.thebjoredcraft.railway"
-    version = "1.0.0"
+    version = "1.0.2"
 }
 
 subprojects {
