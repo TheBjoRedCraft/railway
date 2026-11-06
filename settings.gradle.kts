@@ -8,6 +8,8 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include("railway-database")
 include("railway-config")
+
 include("railway-redis")
 include("railway-redis:railway-redis-ksp")
+
 include("railway-test")
