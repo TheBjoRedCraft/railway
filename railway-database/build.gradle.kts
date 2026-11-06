@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm")
     id("xyz.jpenilla.gremlin-gradle") version "0.0.9"
     `java-library`
+    `maven-publish`
 }
 
 repositories {
@@ -26,4 +27,14 @@ dependencies {
     runtimeDownload("io.r2dbc:r2dbc-pool:1.0.2.RELEASE")
     runtimeDownload("org.postgresql:r2dbc-postgresql:1.1.3.RELEASE")
     runtimeDownload("org.mariadb:r2dbc-mariadb:1.4.2")
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            artifactId = project.name
+            version = project.version.toString()
+            from(components["java"])
+        }
+    }
 }
