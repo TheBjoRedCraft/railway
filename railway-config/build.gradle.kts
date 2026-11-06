@@ -1,16 +1,20 @@
 plugins {
     kotlin("jvm")
     `java-library`
-    id("xyz.jpenilla.gremlin-gradle") version "0.0.9"
+    `maven-publish`
 }
 
 repositories {
     mavenCentral()
 }
 
-configurations {
-    compileOnly {
-        extendsFrom(configurations.runtimeDownload.get())
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            artifactId = project.name
+            version = project.version.toString()
+            from(components["java"])
+        }
     }
 }
 
