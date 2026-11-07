@@ -7,7 +7,9 @@ import org.spongepowered.configurate.BasicConfigurationNode
 import org.spongepowered.configurate.CommentedConfigurationNode
 import org.spongepowered.configurate.ConfigurationNode
 import org.spongepowered.configurate.gson.GsonConfigurationLoader
+import org.spongepowered.configurate.kotlin.dataClassFieldDiscoverer
 import org.spongepowered.configurate.kotlin.objectMapperFactory
+import org.spongepowered.configurate.objectmapping.ObjectMapper
 import org.spongepowered.configurate.serialize.TypeSerializerCollection
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader
 import java.nio.file.Files
@@ -23,6 +25,11 @@ private val serializers = TypeSerializerCollection.builder()
     .register(UriSerializer)
     .register(UrlSerializer)
     .register(UuidSerializer)
+    .registerAnnotatedObjects(
+        ObjectMapper.factoryBuilder()
+            .addDiscoverer(dataClassFieldDiscoverer())
+            .build()
+    )
     .build()
 
 internal class RailwayConfigImpl<T : Any>(
@@ -42,7 +49,9 @@ internal class RailwayConfigImpl<T : Any>(
             RailwayConfigFormat.YAML -> {
                 val loader = YamlConfigurationLoader.builder()
                     .path(path)
-                    .defaultOptions { it.serializers(serializers) }
+                    .defaultOptions {
+                        it.serializers(serializers)
+                    }
                     .build()
 
                 loadNode = { loader.load() }
