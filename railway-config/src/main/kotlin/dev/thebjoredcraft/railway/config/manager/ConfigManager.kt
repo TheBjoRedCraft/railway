@@ -2,7 +2,7 @@ package dev.thebjoredcraft.railway.config.manager
 
 import dev.thebjoredcraft.railway.config.RailwayConfig
 import dev.thebjoredcraft.railway.config.RailwayConfigFormat
-import dev.thebjoredcraft.railway.config.impl.ConfigurateConfig
+import dev.thebjoredcraft.railway.config.impl.RailwayConfigImpl
 import java.nio.file.Path
 
 object ConfigManager {
@@ -11,6 +11,6 @@ object ConfigManager {
         format: RailwayConfigFormat,
         default: T
     ): RailwayConfig<T> {
-        return ConfigurateConfig(path, format, default)
+        return RailwayConfigImpl(path, format, default)
     }
 }

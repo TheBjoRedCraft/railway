@@ -2,19 +2,30 @@ package dev.thebjoredcraft.railway.config.impl
 
 import dev.thebjoredcraft.railway.config.RailwayConfig
 import dev.thebjoredcraft.railway.config.RailwayConfigFormat
+import dev.thebjoredcraft.railway.config.serializer.*
 import org.spongepowered.configurate.BasicConfigurationNode
 import org.spongepowered.configurate.CommentedConfigurationNode
 import org.spongepowered.configurate.ConfigurationNode
 import org.spongepowered.configurate.gson.GsonConfigurationLoader
 import org.spongepowered.configurate.kotlin.objectMapperFactory
+import org.spongepowered.configurate.serialize.TypeSerializerCollection
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicReference
 
 private val mapperFactory = objectMapperFactory()
+private val serializers = TypeSerializerCollection.builder()
+    .register(EnumValueSerializer)
+    .register(FileSerializer)
+    .register(PathSerializer)
+    .register(PatternSerializer)
+    .register(UriSerializer)
+    .register(UrlSerializer)
+    .register(UuidSerializer)
+    .build()
 
-internal class ConfigurateConfig<T : Any>(
+internal class RailwayConfigImpl<T : Any>(
     override val path: Path,
     override val format: RailwayConfigFormat,
     private val defaultValue: T
@@ -31,6 +42,7 @@ internal class ConfigurateConfig<T : Any>(
             RailwayConfigFormat.YAML -> {
                 val loader = YamlConfigurationLoader.builder()
                     .path(path)
+                    .defaultOptions { it.serializers(serializers) }
                     .build()
 
                 loadNode = { loader.load() }
@@ -41,6 +53,7 @@ internal class ConfigurateConfig<T : Any>(
             RailwayConfigFormat.JSON -> {
                 val loader = GsonConfigurationLoader.builder()
                     .path(path)
+                    .defaultOptions { it.serializers(serializers) }
                     .build()
 
                 loadNode = { loader.load() }
