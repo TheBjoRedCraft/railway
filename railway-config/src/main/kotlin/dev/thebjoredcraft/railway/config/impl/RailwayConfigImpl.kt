@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 private val mapperFactory = objectMapperFactory()
 private val serializers = TypeSerializerCollection.builder()
+    .registerAll(TypeSerializerCollection.defaults())
     .register(EnumValueSerializer)
     .register(FileSerializer)
     .register(PathSerializer)
