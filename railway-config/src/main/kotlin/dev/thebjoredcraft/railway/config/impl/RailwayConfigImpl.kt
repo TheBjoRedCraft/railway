@@ -45,11 +45,14 @@ internal class RailwayConfigImpl<T : Any>(
     private val loadNode: () -> ConfigurationNode
     private val saveNode: (ConfigurationNode) -> Unit
 
+    private val actualPath =
+        if (path.toFile().isDirectory) path.resolve("config-${defaultValue.javaClass.simpleName.lowercase()}.yml") else path
+
     init {
         when (format) {
             RailwayConfigFormat.YAML -> {
                 val loader = YamlConfigurationLoader.builder()
-                    .path(path)
+                    .path(actualPath)
                     .defaultOptions {
                         it.serializers(serializers)
                     }
@@ -62,7 +65,7 @@ internal class RailwayConfigImpl<T : Any>(
 
             RailwayConfigFormat.JSON -> {
                 val loader = GsonConfigurationLoader.builder()
-                    .path(path)
+                    .path(actualPath)
                     .defaultOptions { it.serializers(serializers) }
                     .build()
 
@@ -77,7 +80,7 @@ internal class RailwayConfigImpl<T : Any>(
         get() = state.get()
 
     override fun load(): T {
-        if (!Files.exists(path)) {
+        if (!Files.exists(actualPath)) {
             state.set(defaultValue)
 
             save()
