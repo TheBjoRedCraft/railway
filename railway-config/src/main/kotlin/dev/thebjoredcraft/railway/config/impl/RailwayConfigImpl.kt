@@ -8,7 +8,6 @@ import org.spongepowered.configurate.CommentedConfigurationNode
 import org.spongepowered.configurate.ConfigurationNode
 import org.spongepowered.configurate.gson.GsonConfigurationLoader
 import org.spongepowered.configurate.kotlin.dataClassFieldDiscoverer
-import org.spongepowered.configurate.kotlin.objectMapperFactory
 import org.spongepowered.configurate.objectmapping.ObjectMapper
 import org.spongepowered.configurate.serialize.TypeSerializerCollection
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader
@@ -16,7 +15,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicReference
 
-private val mapperFactory = objectMapperFactory()
+private val mapperFactory =
+    ObjectMapper.factoryBuilder().addDiscoverer(dataClassFieldDiscoverer()).build()
 private val serializers = TypeSerializerCollection.builder()
     .registerAll(TypeSerializerCollection.defaults())
     .register(EnumValueSerializer)
@@ -26,11 +26,7 @@ private val serializers = TypeSerializerCollection.builder()
     .register(UriSerializer)
     .register(UrlSerializer)
     .register(UuidSerializer)
-    .registerAnnotatedObjects(
-        ObjectMapper.factoryBuilder()
-            .addDiscoverer(dataClassFieldDiscoverer())
-            .build()
-    )
+    .registerAnnotatedObjects(mapperFactory)
     .build()
 
 internal class RailwayConfigImpl<T : Any>(
